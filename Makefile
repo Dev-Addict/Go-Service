@@ -20,7 +20,7 @@ KIND_CLUSTER    := go-service-cluster
 NAMESPACE       := sales-system
 SALES_APP       := sales
 AUTH_APP        := auth
-BASE_IMAGE_NAME := localhost/devaddict
+BASE_IMAGE_NAME := ariaazadipour
 VERSION         := 0.0.1
 SALES_IMAGE     := $(BASE_IMAGE_NAME)/$(SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
@@ -41,6 +41,16 @@ dev-up:
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
+dev-load:
+	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
+
+dev-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
+
+dev-apply:
+	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kubectl wait pods --namespace $(NAMESPACE) --selector app=$(SALES_APP) --for=condition=Ready
+
 dev-status-all:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
@@ -48,6 +58,13 @@ dev-status-all:
 
 dev-status:
 	watch -n 2 kubectl get pods -o wide --all-namespaces
+
+dev-restart:
+	kubectl rollout restart deployment $(APP) --namespace=$(NAMESPACE)
+
+dev-update: build dev-load dev-restart
+
+dev-update-apply: build dev-load dev-apply
 
 # ==============================================================================
 # Building containers
