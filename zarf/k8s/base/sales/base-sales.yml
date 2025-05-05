@@ -22,3 +22,8 @@ spec:
         - name: sales-api
           image: service-image
           imagePullPolicy: IfNotPresent
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
