@@ -45,7 +45,7 @@ dev-load:
 	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
 
 dev-logs:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run app/tooling/logfmt/main.go -service=$(SERVICE_NAME)
 
 dev-apply:
 	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
@@ -81,7 +81,10 @@ sales:
 # ==============================================================================
 
 run-local:
-	go run app/services/sales-api/main.go
+	go run app/services/sales-api/main.go | go run app/tooling/logfmt/main.go -service=$(SERVICE_NAME)
+
+run-local-help:
+	go run app/services/sales-api/main.go -h
 
 tidy:
 	go mod tidy
