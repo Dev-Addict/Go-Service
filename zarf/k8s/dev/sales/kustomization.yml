@@ -4,6 +4,7 @@ resources:
   - ../../base/sales/
 patches:
   - path: ./dev-sales-patch-deploy.yml
+  - path: ./dev-sales-patch-service.yml
 images:
   - name: service-image
     newName: ariaazadipour/sales:0.0.1

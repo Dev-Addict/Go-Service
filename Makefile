@@ -1,4 +1,4 @@
-.PHONY: all clean test build
+.PHONY: all clean test build dev
 # check to see if we can use ash, in Alpine images, or default to BASH
 SHELL_PATH = /bin/ash
 SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
@@ -15,6 +15,7 @@ PROMETHEUS      := prom/prometheus:v3.2.0
 TEMPO           := grafana/tempo:2.7.0
 LOKI            := grafana/loki:3.4.0
 PROMTAIL        := grafana/promtail:3.4.0
+TELEPRESENCE    := datawire/tel2:2.13.2
 
 KIND_CLUSTER    := go-service-cluster
 NAMESPACE       := sales-system
@@ -29,16 +30,28 @@ AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
 # ==============================================================================
 # Running from within k8s/kind
 
-dev-up:
+dev: build dev-up dev-load dev-apply dev-logs
+
+dev-up-local:
 	kind create cluster \
 		--image $(KIND) \
 		--name $(KIND_CLUSTER) \
 		--config zarf/k8s/dev/kind-config.yml
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
-	wait;
 
-dev-down:
+	docker pull $(TELEPRESENCE)
+	kind load docker-image $(TELEPRESENCE) --name $(KIND_CLUSTER)
+
+dev-up: dev-up-local
+	telepresence --context=kind-$(KIND_CLUSTER) helm install
+	telepresence --context=kind-$(KIND_CLUSTER) connect
+
+dev-down-local:
+	kind delete cluster --name $(KIND_CLUSTER)
+
+dev-down: 
+	telepresence quit -s
 	kind delete cluster --name $(KIND_CLUSTER)
 
 dev-load:
