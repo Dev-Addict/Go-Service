@@ -17,6 +17,7 @@ LOKI            := grafana/loki:3.4.0
 PROMTAIL        := grafana/promtail:3.4.0
 TELEPRESENCE    := datawire/tel2:2.13.2
 
+SERVICE_NAME    := sales-api
 KIND_CLUSTER    := go-service-cluster
 NAMESPACE       := sales-system
 SALES_APP       := sales
@@ -110,5 +111,8 @@ metrics-view-sc:
 	expvarmon -ports="$(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 
 metrics-view:
-	expvarmon -ports="$(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3001" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+	expvarmon -ports="$(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+healthcheck-endpoint:
+	curl -il $(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:3000/healthcheck
 
