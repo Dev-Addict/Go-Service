@@ -1,16 +1,17 @@
 package healthcheckgrp
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 )
 
-func HealthCheck(w http.ResponseWriter, r *http.Request) {
+func HealthCheck(_ context.Context, w http.ResponseWriter, r *http.Request) error {
 	response := struct {
 		Status string
 	}{
 		Status: "OK",
 	}
 
-	json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response)
 }

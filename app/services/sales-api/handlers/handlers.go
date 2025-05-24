@@ -3,10 +3,11 @@ package handlers
 import (
 	"os"
 
-	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
 	"github.com/dev-addict/go-service/app/services/sales-api/handlers/v1/healthcheckgrp"
+	"github.com/dev-addict/go-service/business/web/mid"
+	"github.com/dev-addict/go-service/zarf/web"
 )
 
 type APIMuxConfig struct {
@@ -14,10 +15,10 @@ type APIMuxConfig struct {
 	Log      *zap.SugaredLogger
 }
 
-func APIMux(cfg APIMuxConfig) *mux.Router {
-	r := mux.NewRouter()
+func APIMux(cfg APIMuxConfig) *web.App {
+	r := web.NewApp(cfg.Shutdown, mid.Logger(cfg.Log))
 
-	r.HandleFunc("/healthcheck", healthcheckgrp.HealthCheck).Methods("GET")
+	r.Handle("GET", "/healthcheck", healthcheckgrp.HealthCheck)
 
 	return r
 }

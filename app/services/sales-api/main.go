@@ -119,7 +119,7 @@ func run(log *zap.SugaredLogger) error {
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      apiMux,
+		Handler:      apiMux.Router,
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
