@@ -2,16 +2,17 @@ package healthcheckgrp
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/dev-addict/go-service/zarf/web"
 )
 
-func HealthCheck(_ context.Context, w http.ResponseWriter, r *http.Request) error {
+func HealthCheck(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	response := struct {
-		Status string
+		Status string `json:"status"`
 	}{
 		Status: "OK",
 	}
 
-	return json.NewEncoder(w).Encode(response)
+	return web.Respond(ctx, w, response, http.StatusOK)
 }
