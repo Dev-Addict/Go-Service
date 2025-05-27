@@ -2,9 +2,10 @@ package web
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"os"
+	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +18,14 @@ type App struct {
 	*mux.Router
 	shutdown chan os.Signal
 	mw       []Middleware
+}
+
+func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
+	return &App{
+		Router:   mux.NewRouter(),
+		shutdown: shutdown,
+		mw:       mw,
+	}
 }
 
 func (a *App) Handle(method string, path string, handler Handler, mw ...Middleware) {
@@ -32,18 +41,27 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 		ctx := context.WithValue(r.Context(), key, &v)
 
 		if err := handler(ctx, w, r); err != nil {
-			fmt.Println(err)
-			return
+			if validateShutdown(err) {
+				a.SignalShutdown()
+				return
+			}
 		}
 	}
 
 	a.HandleFunc(path, h).Methods(method)
 }
 
-func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
-	return &App{
-		Router:   mux.NewRouter(),
-		shutdown: shutdown,
-		mw:       mw,
+func (a *App) SignalShutdown() {
+	a.shutdown <- syscall.SIGTERM
+}
+
+func validateShutdown(err error) bool {
+	switch {
+	case errors.Is(err, syscall.EPIPE):
+		return false
+	case errors.Is(err, syscall.ECONNRESET):
+		return false
 	}
+
+	return true
 }

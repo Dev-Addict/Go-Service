@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/dev-addict/go-service/app/services/sales-api/handlers"
-	"github.com/dev-addict/go-service/business/web/debug"
+	"github.com/dev-addict/go-service/business/web/v1/debug"
 	"github.com/dev-addict/go-service/foundation/logger"
 )
 
